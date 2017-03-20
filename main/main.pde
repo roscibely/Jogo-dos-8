@@ -1,116 +1,143 @@
-int N = 3;
-int flag=0;
-Estado EI = new Estado();                 
-Estado EF = new Estado();
-int num=1;
+int N = 3; //Tamanho do tabuleiro
+int flag=0; //???
+Estado EI = new Estado(N);                 
+Estado EF = new Estado(N);
+
+int[][] m = {{1, 5, 7}, {6, 9, 4}, {3, 8, 2}};
+int[][] m_ideal = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
 
 
-Peca mp[][]= new Peca[3][3];
-
-void criar() {
-  int k = 1;
-  for (int i=0; i<N; i++) {
-    for (int j=0; j<N; j++) {
-      Peca p = new Peca(k++, j*width/N, i*height/N, width/N, height/N);
-      mp[i][j]=p;
-      //if(k==9) j=N;
-    }
-  }
-}
-
-void update() {
-  for (int ii=0; ii<N; ii++) {
-    for (int jj=0; jj<N; jj++) {
-      if (mp[ii][jj].num!=9)
-        mp[ii][jj].drawPeca();
-    }
-  }
-}
-
+Estado e = EI;
+Estado e2;
 void setup() {
-  for (int i=0; i<N; i++) {
-    for (int j=0; j<N; j++) {
-      EF.getM()[i][j] = num++;
-    }
-  }
-  size(400, 400);
+  size(600, 600);
   background(255, 255, 255);
-  criar();
+  e = new Estado(N);
+  e.setMask(m);
+  //EF.setMask(m_ideal);
 }
-
-
-int[][] m = {{1, 1, 1}, {1, 1, 1}, {1, 1, 0}};
-int i, j, c=0;
-
+boolean solucao = false;
 void draw() {
-  background(255, 255, 255);
+
+  //background(255, 255, 255);
   if (mousePressed) {
-    //println("*"+mp[0][1].x1);
-    mp[j][i].x1=mouseX-(width/N)*0.5;
-    mp[j][i].y1=mouseY-(height/N)*0.5;
-    if ((i!=mouseX/(width/N) || j!=mouseY/(height/N)) && c==0) {
-      Peca temp = mp[mouseY/(height/N)][mouseX/(width/N)];
-      mp[mouseY/(height/N)][mouseX/(width/N)] = mp[j][i];
-      mp[j][i]=temp;
-      c=1;
-    }
-  } else {
-    c=0;
-    println(""+i+"-"+j);
-    i=mouseX/(width/N);
-    j=mouseY/(height/N);
+    //e.move();
   }
-
-  update();
-}
-
-
-
-int h(int x0, int y0, int x1, int y1) { //Heurística: Cálculo da Distância 
-  return (int) (pow(sqrt((x0-x1)), 2) + pow(sqrt((y0-y1)), 2));
-}
-
-//Move a peça para esquerda, direita, cima, baixo
-Estado move(int x, int y, Estado e) {
-  int[][]M = e.getM(); 
-  if (M[x+1][y]==0 && (x+1)<N) {
-    int aux = M[x][y];
-    M[x][y]=0;
-    M[x+1][y]=aux;
-    flag=1;
-  } else if (M[x-1][y]==0 && (x-1)>0) {
-    int aux = M[x][y];
-    M[x][y]=0;
-    M[x-1][y]=aux;
-    flag=1;
-  } else if (M[x][y+1]==0 && (y+1)<N) {
-    int aux = M[x][y];
-    M[x][y]=0;
-    M[x][y+1]=aux;
-    flag=1;
-  } else if (M[x][y-1]==0 && (y-1)>0) {
-    int aux = M[x][y];
-    M[x][y]=0;
-    M[x][y-1]=aux;
-    flag=1;
-  }
-  e.setM(M);
-  e.setCusto(e.getPai().getCusto()+1);
-  return e;
-}
-
-ArrayList<Estado> expande(Estado e) { //Expansão dos estados
-  ArrayList<Estado> filhos = new ArrayList<Estado>();
-  String est = "";
-  Estado temp = new Estado();
-  for (int i=0; i<N; i++) {
-    for (int j=0; j<N; j++) {
-      temp =move(i, j, temp);
-      if (flag==1) {
-        filhos.add(temp);
+  if (!solucao) {
+    ArrayList<Estado> queue = new ArrayList<Estado>();
+    queue.add(e);
+    while (!queue.isEmpty()) {
+      Estado estado = queue_dropMenor(queue);
+      if (estado.isObjective(m_ideal)) {
+        estado.draw();
+        solucao = true;
       }
-      flag=0;
+      estado.draw(); //<>//
+      ArrayList<Estado> filhos = expande(estado);
+      for (int i=0; i<filhos.size(); i++) {
+        queue.add(filhos.get(i));
+      }
+    }
+  }
+  //e.draw();
+  //println(e.getH(m_ideal));
+}
+
+
+ArrayList<Estado> expande(Estado parent) { //Expansão dos estados
+  ArrayList<Estado> filhos = new ArrayList<Estado>();
+  for (int i=1; i<5; i++) {
+    Estado test = parent.move(i);
+    if (test!=null) {
+      test.setCost(parent.getCost()+1);
+      test.setParent(parent);
+      filhos.add(test);
     }
   }
   return filhos;
 }
+
+public Estado queue_dropMenor(ArrayList<Estado> queue) {
+  float menorAvaliacao = queue.get(0).getEval();
+  int p = 0;
+  for (int i=1; i<queue.size(); i++) {
+    if (queue.get(i).getEval()<menorAvaliacao) {
+      menorAvaliacao = queue.get(i).getEval();
+      p = i;
+    }
+  }
+
+  Estado estado = queue.get(p);
+  queue.remove(p);
+  return estado;
+}
+
+
+
+//void draw() {
+//  background(255, 255, 255);
+//  if (mousePressed) {
+//    //println("*"+mp[0][1].x1);
+//    mp[j][i].x1 = mouseX-(width/N)*0.5;
+//    mp[j][i].y1 = mouseY-(height/N)*0.5;
+//    if ((i != mouseX/(width/N) || j != mouseY/(height/N)) && c == 0) {
+//      Peca temp = mp[mouseY/(height/N)][mouseX/(width/N)];
+//      mp[mouseY/(height/N)][mouseX/(width/N)] = mp[j][i];
+//      mp[j][i]=temp;
+//      c=1;
+//    }
+//  } else {
+//    c = 0;
+//    println("" + i + "-" + j);
+//    i = mouseX/(width/N);
+//    j = mouseY/(height/N);
+//  }
+
+//  e.draw();
+//}
+
+
+//Move a peça para esquerda, direita, cima, baixo
+//Estado move(int x, int y, Estado e) {
+//  int[][]M = e.getM(); 
+//  if (M[x+1][y]==0 && (x+1)<N) {
+//    int aux = M[x][y];
+//    M[x][y]=0;
+//    M[x+1][y]=aux;
+//    flag=1;
+//  } else if (M[x-1][y]==0 && (x-1)>0) {
+//    int aux = M[x][y];
+//    M[x][y]=0;
+//    M[x-1][y]=aux;
+//    flag=1;
+//  } else if (M[x][y+1]==0 && (y+1)<N) {
+//    int aux = M[x][y];
+//    M[x][y]=0;
+//    M[x][y+1]=aux;
+//    flag=1;
+//  } else if (M[x][y-1]==0 && (y-1)>0) {
+//    int aux = M[x][y];
+//    M[x][y]=0;
+//    M[x][y-1]=aux;
+//    flag=1;
+//  }
+//  e.setM(M);
+//  e.setCusto(e.getPai().getCusto()+1);
+//  return e;
+//}
+
+//ArrayList<Estado> expande(Estado e) { //Expansão dos estados
+//  ArrayList<Estado> filhos = new ArrayList<Estado>();
+//  String est = "";
+//  Estado temp = new Estado(N);
+//  for (int i=0; i<N; i++) {
+//    for (int j=0; j<N; j++) {
+//      temp = move(i, j, temp);
+//      if (flag==1) {
+//        filhos.add(temp);
+//      }
+//      flag=0;
+//    }
+//  }
+//  return filhos;
+//}
