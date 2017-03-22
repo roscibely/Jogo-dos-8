@@ -1,143 +1,120 @@
-int N = 3; //Tamanho do tabuleiro
-int flag=0; //???
-Estado EI = new Estado(N);                 
-Estado EF = new Estado(N);
 
-int[][] m = {{1, 5, 7}, {6, 9, 4}, {3, 8, 2}};
-int[][] m_ideal = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
-
-
-Estado e = EI;
-Estado e2;
-void setup() {
-  size(600, 600);
-  background(255, 255, 255);
-  e = new Estado(N);
-  e.setMask(m);
-  //EF.setMask(m_ideal);
-}
-boolean solucao = false;
-void draw() {
-
-  //background(255, 255, 255);
-  if (mousePressed) {
-    //e.move();
-  }
-  if (!solucao) {
-    ArrayList<Estado> queue = new ArrayList<Estado>();
-    queue.add(e);
-    while (!queue.isEmpty()) {
-      Estado estado = queue_dropMenor(queue);
-      if (estado.isObjective(m_ideal)) {
-        estado.draw();
-        solucao = true;
-      }
-      estado.draw(); //<>//
-      ArrayList<Estado> filhos = expande(estado);
-      for (int i=0; i<filhos.size(); i++) {
-        queue.add(filhos.get(i));
-      }
-    }
-  }
-  //e.draw();
-  //println(e.getH(m_ideal));
+void setup(){
+  size(400,400);
+  background(255,255,255);
 }
 
+int N=3;
+int[][] a = {{1,2,3},{4,5,6},{7,8,9}};
+int[][] a1 = {{5,2,8},{4,1,6},{7,3,9}};
 
-ArrayList<Estado> expande(Estado parent) { //Expansão dos estados
-  ArrayList<Estado> filhos = new ArrayList<Estado>();
-  for (int i=1; i<5; i++) {
-    Estado test = parent.move(i);
-    if (test!=null) {
-      test.setCost(parent.getCost()+1);
-      test.setParent(parent);
-      filhos.add(test);
-    }
-  }
-  return filhos;
-}
+Estado e = new Estado(a);
 
-public Estado queue_dropMenor(ArrayList<Estado> queue) {
-  float menorAvaliacao = queue.get(0).getEval();
+Estado queue_dropMenor(ArrayList<Estado> queue) {
+  float menorAvaliacao = queue.get(0).g;
   int p = 0;
   for (int i=1; i<queue.size(); i++) {
-    if (queue.get(i).getEval()<menorAvaliacao) {
-      menorAvaliacao = queue.get(i).getEval();
+    if (queue.get(i).g<menorAvaliacao) {
+      menorAvaliacao = queue.get(i).f;
       p = i;
     }
   }
-
   Estado estado = queue.get(p);
   queue.remove(p);
   return estado;
 }
 
+boolean igual(Estado a, Estado b){
+  for (int i=0; i<N; i++) {
+    for (int j=0; j<N; j++) {
+      if(a.M[i][j]!=b.M[i][j]){
+        return false;
+      }
+    }
+  }
+  return true;
+}
 
+boolean existe(ArrayList<Estado> list, Estado a){
+  for(Estado e: list){
+    if(igual(e,a))
+      return true;
+  }
+  return false;
+}
 
-//void draw() {
-//  background(255, 255, 255);
-//  if (mousePressed) {
-//    //println("*"+mp[0][1].x1);
-//    mp[j][i].x1 = mouseX-(width/N)*0.5;
-//    mp[j][i].y1 = mouseY-(height/N)*0.5;
-//    if ((i != mouseX/(width/N) || j != mouseY/(height/N)) && c == 0) {
-//      Peca temp = mp[mouseY/(height/N)][mouseX/(width/N)];
-//      mp[mouseY/(height/N)][mouseX/(width/N)] = mp[j][i];
-//      mp[j][i]=temp;
-//      c=1;
-//    }
-//  } else {
-//    c = 0;
-//    println("" + i + "-" + j);
-//    i = mouseX/(width/N);
-//    j = mouseY/(height/N);
-//  }
+ArrayList<Estado> solucao = new ArrayList<Estado>();
 
-//  e.draw();
-//}
+void A(){
+  ArrayList<Estado> queue = new ArrayList<Estado>();
+  ArrayList<Estado> temp = new ArrayList<Estado>();
+  ArrayList<Estado> visitados = new ArrayList<Estado>();
+  solucao.add(e);
+  queue.add(e);
+  while (!queue.isEmpty()) {
+    Estado estado = queue_dropMenor(queue);
+    visitados.add(estado);
+    estado.imprime();
+    if (estado.isObjective()) {
+      while(estado.pai!=null){
+        temp.add(estado);
+        estado = estado.pai;
+      }
+      for(int i=temp.size();i>0;i--){
+        solucao.add(temp.get(i-1));
+      }
+      print("Estado objetivo");
+      return;
+    }
+    ArrayList<Estado> filhos = estado.expande();
+    for (int i=0; i<filhos.size(); i++) {
+      if(!existe(queue,filhos.get(i)) && !existe(visitados,filhos.get(i)))
+        queue.add(filhos.get(i));
+    }
+  }
+}
 
+//TABULEIRO
 
-//Move a peça para esquerda, direita, cima, baixo
-//Estado move(int x, int y, Estado e) {
-//  int[][]M = e.getM(); 
-//  if (M[x+1][y]==0 && (x+1)<N) {
-//    int aux = M[x][y];
-//    M[x][y]=0;
-//    M[x+1][y]=aux;
-//    flag=1;
-//  } else if (M[x-1][y]==0 && (x-1)>0) {
-//    int aux = M[x][y];
-//    M[x][y]=0;
-//    M[x-1][y]=aux;
-//    flag=1;
-//  } else if (M[x][y+1]==0 && (y+1)<N) {
-//    int aux = M[x][y];
-//    M[x][y]=0;
-//    M[x][y+1]=aux;
-//    flag=1;
-//  } else if (M[x][y-1]==0 && (y-1)>0) {
-//    int aux = M[x][y];
-//    M[x][y]=0;
-//    M[x][y-1]=aux;
-//    flag=1;
-//  }
-//  e.setM(M);
-//  e.setCusto(e.getPai().getCusto()+1);
-//  return e;
-//}
+void criar(int[][] m) {
+  for (int i=0; i<N; i++) {
+    for (int j=0; j<N; j++) {
+      Peca p = new Peca(m[j][i], j*width/N, i*height/N, width/N, height/N);
+    }
+  }
+}
 
-//ArrayList<Estado> expande(Estado e) { //Expansão dos estados
-//  ArrayList<Estado> filhos = new ArrayList<Estado>();
-//  String est = "";
-//  Estado temp = new Estado(N);
-//  for (int i=0; i<N; i++) {
-//    for (int j=0; j<N; j++) {
-//      temp = move(i, j, temp);
-//      if (flag==1) {
-//        filhos.add(temp);
-//      }
-//      flag=0;
-//    }
-//  }
-//  return filhos;
-//}
+void embaralha(){
+  for(int i=0;i<20;i++){
+    ArrayList<Estado> filhos = e.expande(); 
+    e = filhos.get((int)random(0,filhos.size()));
+  }
+}
+
+int s = 0;
+int i = 0;
+void draw(){
+  if(s==0) {
+    embaralha();
+    A();
+  }
+  s=1;  
+  criar(solucao.get(i).M);
+  i++;
+  if(i==solucao.size()) i=solucao.size()-1;
+  delay(500);
+  /*
+  Estado e = new Estado(a);
+  println(e.custo());
+  int[] aa = e.getPecaVazia();
+  println(aa[0]+" "+aa[1]);
+  e.imprime();
+  ArrayList<Estado> filhos = new ArrayList<Estado>();
+  filhos = e.expande();
+  for(Estado k : filhos){
+    k.imprime();
+    println(k.g);
+  }
+  */
+  //exit();
+}
