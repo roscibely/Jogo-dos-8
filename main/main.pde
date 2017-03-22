@@ -57,7 +57,8 @@ void A(){
     estado.imprime();
     if (estado.isObjective()) {
       while(estado.pai!=null){
-        temp.add(estado);
+        if(!existe(temp,estado))
+            temp.add(estado);      
         estado = estado.pai;
       }
       for(int i=temp.size();i>0;i--){
