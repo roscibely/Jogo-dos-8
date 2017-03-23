@@ -1,7 +1,7 @@
 
 void setup(){
   size(400,400);
-  background(255,255,255);
+  background(128,128,128);
 }
 
 int N=3;
@@ -11,10 +11,10 @@ int[][] a1 = {{5,2,8},{4,1,6},{7,3,9}};
 Estado e = new Estado(a);
 
 Estado queue_dropMenor(ArrayList<Estado> queue) {
-  float menorAvaliacao = queue.get(0).g;
+  float menorAvaliacao = queue.get(0).f;
   int p = 0;
   for (int i=1; i<queue.size(); i++) {
-    if (queue.get(i).g<menorAvaliacao) {
+    if (queue.get(i).f<menorAvaliacao) {
       menorAvaliacao = queue.get(i).f;
       p = i;
     }
@@ -56,10 +56,11 @@ void A(){
     visitados.add(estado);
     estado.imprime();
     if (estado.isObjective()) {
-      while(estado.pai!=null){
-        if(!existe(temp,estado))
-            temp.add(estado);      
+       temp.add(estado);    
+      while(estado.pai!=null){     
         estado = estado.pai;
+        if(!existe(temp, estado))
+        temp.add(estado); 
       }
       for(int i=temp.size();i>0;i--){
         solucao.add(temp.get(i-1));
@@ -71,6 +72,7 @@ void A(){
     for (int i=0; i<filhos.size(); i++) {
       if(!existe(queue,filhos.get(i)) && !existe(visitados,filhos.get(i)))
         queue.add(filhos.get(i));
+        filhos.get(i).imprime();
     }
   }
 }
@@ -104,18 +106,5 @@ void draw(){
   i++;
   if(i==solucao.size()) i=solucao.size()-1;
   delay(500);
-  /*
-  Estado e = new Estado(a);
-  println(e.custo());
-  int[] aa = e.getPecaVazia();
-  println(aa[0]+" "+aa[1]);
-  e.imprime();
-  ArrayList<Estado> filhos = new ArrayList<Estado>();
-  filhos = e.expande();
-  for(Estado k : filhos){
-    k.imprime();
-    println(k.g);
-  }
-  */
-  //exit();
+
 }
