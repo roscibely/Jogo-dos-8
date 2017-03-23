@@ -14,18 +14,18 @@ class Peca {
 
   void drawPeca() {
     if(this.num==9){
-      stroke(0,0,0);
-      fill(240, 240, 240);
+      stroke(255,255,255);
+      fill(255, 255, 255);
       rect(x1, y1, x2, y2);
     }
     else{
-      stroke(0,0,0);
-      fill(255,255,255);
+      stroke(255,255,255);
+      fill(0,0,0);
       rect(x1, y1, x2, y2);
 
       textSize(52);
       stroke(0, 0, 0);
-      fill(72, 158, 255);
+      fill(255, 0, 0);
       text(num, x1+48, y1+86);
     }
   }
