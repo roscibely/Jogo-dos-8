@@ -1,20 +1,13 @@
-
-void setup(){
-  size(400,400);
-  background(128,128,128);
-}
-
 int N=3;
-int[][] a = {{1,2,3},{4,5,6},{7,8,9}};
-int[][] a1 = {{5,2,8},{4,1,6},{7,3,9}};
 
-Estado e = new Estado(a);
+Estado e = new Estado(); //Estado inicial inicializado pela função embaralha()
 
+//Retorna o estado de menor avaliação
 Estado queue_dropMenor(ArrayList<Estado> queue) {
-  float menorAvaliacao = queue.get(0).f;
+  float menorAvaliacao = queue.get(0).g;
   int p = 0;
   for (int i=1; i<queue.size(); i++) {
-    if (queue.get(i).f<menorAvaliacao) {
+    if (queue.get(i).g<menorAvaliacao) {
       menorAvaliacao = queue.get(i).f;
       p = i;
     }
@@ -24,6 +17,7 @@ Estado queue_dropMenor(ArrayList<Estado> queue) {
   return estado;
 }
 
+//verifica se dois estados são iguais
 boolean igual(Estado a, Estado b){
   for (int i=0; i<N; i++) {
     for (int j=0; j<N; j++) {
@@ -35,6 +29,7 @@ boolean igual(Estado a, Estado b){
   return true;
 }
 
+//verifica se já existe um estado semalhante na lista
 boolean existe(ArrayList<Estado> list, Estado a){
   for(Estado e: list){
     if(igual(e,a))
@@ -43,42 +38,7 @@ boolean existe(ArrayList<Estado> list, Estado a){
   return false;
 }
 
-ArrayList<Estado> solucao = new ArrayList<Estado>();
-
-void A(){
-  ArrayList<Estado> queue = new ArrayList<Estado>();
-  ArrayList<Estado> temp = new ArrayList<Estado>();
-  ArrayList<Estado> visitados = new ArrayList<Estado>();
-  solucao.add(e);
-  queue.add(e);
-  while (!queue.isEmpty()) {
-    Estado estado = queue_dropMenor(queue);
-    visitados.add(estado);
-    estado.imprime();
-    if (estado.isObjective()) {
-       temp.add(estado);    
-      while(estado.pai!=null){     
-        estado = estado.pai;
-        if(!existe(temp, estado))
-        temp.add(estado); 
-      }
-      for(int i=temp.size();i>0;i--){
-        solucao.add(temp.get(i-1));
-      }
-      print("Estado objetivo");
-      return;
-    }
-    ArrayList<Estado> filhos = estado.expande();
-    for (int i=0; i<filhos.size(); i++) {
-      if(!existe(queue,filhos.get(i)) && !existe(visitados,filhos.get(i)))
-        queue.add(filhos.get(i));
-        filhos.get(i).imprime();
-    }
-  }
-}
-
-//TABULEIRO
-
+//Cria um tabuleiro na tela
 void criar(int[][] m) {
   for (int i=0; i<N; i++) {
     for (int j=0; j<N; j++) {
@@ -87,24 +47,59 @@ void criar(int[][] m) {
   }
 }
 
+//Embaralha o tabulairo de modo a gerar um estado solucionavel
 void embaralha(){
-  for(int i=0;i<20;i++){
+  for(int i=0;i<50;i++){
     ArrayList<Estado> filhos = e.expande(); 
     e = filhos.get((int)random(0,filhos.size()));
   }
 }
 
 int s = 0;
-int i = 0;
-void draw(){
-  if(s==0) {
-    embaralha();
-    A();
-  }
-  s=1;  
-  criar(solucao.get(i).M);
-  i++;
-  if(i==solucao.size()) i=solucao.size()-1;
-  delay(500);
+int tlist = 0;
 
+ArrayList<Estado> queue = new ArrayList<Estado>(); // Lista usada no calculo
+ArrayList<Estado> solucao = new ArrayList<Estado>(); // Lista para armazenar a solução
+
+void setup(){
+  size(400,400);
+  background(255,255,255);
+  embaralha();
+  queue.add(e);
+  criar(e.M);
+}
+
+Estado estado = new Estado(); //Estado atual
+
+void draw(){
+  
+  if(!queue.isEmpty() && s==0) {
+    estado = queue_dropMenor(queue);
+    //estado.imprime();
+    if (estado.isObjective()) {
+      print("Estado objetivo");
+      s=1;
+    }
+    ArrayList<Estado> filhos = estado.expande();
+    for (int i=0; i<filhos.size(); i++) {
+      if(!existe(queue,filhos.get(i))/* && !existe(visitados,filhos.get(i))*/)
+        queue.add(filhos.get(i));
+    }
+  }
+  else if(s==1){
+    if(!igual(estado,e)){
+      solucao.add(estado);
+      estado=estado.pai;
+    }
+    else{
+      solucao.add(estado);
+      tlist = solucao.size()-1;
+      s=2;
+    }
+  }
+  else{
+    criar(solucao.get(tlist--).M);
+    delay(1000);
+    if(tlist<0) tlist=0;
+  }
 }
