@@ -1,6 +1,6 @@
 
 void setup(){
-  size(400,400);
+  size(400,400); //<>//
   background(128,128,128);
 }
 
@@ -98,7 +98,7 @@ int s = 0;
 int i = 0;
 void draw(){
   if(s==0) {
-    embaralha();
+    embaralha(); //<>//
     A();
   }
   s=1;  

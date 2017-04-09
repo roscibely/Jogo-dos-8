@@ -1,11 +1,11 @@
-class Estado{
+class Estado { //<>// //<>// //<>//
   Estado pai=null;
   int N = 3; //Tamanho
   int M[][] = new int[N][N];
   int g=0;
   int h=0;
   int f=0;
-  
+
   public Estado() {
     int num = 0;
     for (int i=0; i<N; i++) {
@@ -14,8 +14,8 @@ class Estado{
       }
     }
   }
-  
-  public Estado(int[][] m){
+
+  public Estado(int[][] m) {
     for (int i=0; i<N; i++) {
       for (int j=0; j<N; j++) {
         this.M[j][i] = m[i][j];
@@ -23,8 +23,8 @@ class Estado{
     }
     this.h = hEstado();
   }
-  
-  public void imprime(){
+
+  public void imprime() {
     println("+++++++++++++++++");
     for (int i=0; i<N; i++) {
       for (int j=0; j<N; j++) {
@@ -33,52 +33,52 @@ class Estado{
       println();
     }
   }
-  
-  public int h(int x, int y){
+
+  public int h(int x, int y) { // distancia manhattan de uma peça
     int num = 0;
     for (int i=0; i<N; i++) {
       for (int j=0; j<N; j++) {
         ++num;
-        if(num == M[y][x]){
+        if (num == M[y][x]) {
           return (int)(abs(x-i)+abs(y-j));
         }
       }
     }
     return -1;
   }
-  
+
   public boolean isObjective() {    //verifica se o estado é objetivo
     int c=0;
     for (int i=0; i<N; i++) {
       for (int j=0; j<N; j++) {
-        c+=h(i,j);
+        c+=h(i, j);
       }
     }
-    if(c==0)
+    if (c==0)
       return true;
     return false;
   }
-  
-  public int hEstado(){
+
+  public int hEstado() {
     int c=0;
     int k=0;
     int[] hs = new int[9];
     for (int i=0; i<N; i++) {
       for (int j=0; j<N; j++) {
         //c+=h(i,j);
-        hs[k]=h(i,j);
+        hs[k]=h(i, j);
       }
     }
     return max(hs);
   }
-  
+
   //Retorna a posição da peça vazia
-  public int[] getPecaVazia(){
+  public int[] getPecaVazia() {
     int num = 0;
-    int[] a = {-1,-1};
+    int[] a = {-1, -1};
     for (int i=0; i<N; i++) {
       for (int j=0; j<N; j++) {
-        if(M[i][j] == 9){
+        if (M[i][j] == 9) {
           a[0] = j;
           a[1] = i;
           return a;
@@ -87,9 +87,9 @@ class Estado{
     }
     return a;
   }
-  
+
   //Retorna uma copia do estado atual
-  public int[][] copia(){
+  public int[][] copia() {
     int[][] c = new int[N][N];
     for (int i=0; i<N; i++) {
       for (int j=0; j<N; j++) {
@@ -98,66 +98,74 @@ class Estado{
     }
     return c;
   }
-  
+
   //Espande o estado
   ArrayList<Estado> expande() { //Expansão dos estados
     ArrayList<Estado> filhos = new ArrayList<Estado>();
     //Obtem a posição do valor 9
-    int[] pvazio = getPecaVazia();
+    int[] pvazio = this.getPecaVazia(); //Posição da peça vazia (9) do estado pai
     for (int k=1; k<5; k++) {
-      int[][] cp = copia();
-      switch(k){
-        case 1:{
-          if(!((pvazio[0]+1)>(N-1))){
+      int[][] cp = copia(); // Retorna M(i,j)->cp(j,i)
+      Estado temp;
+      switch(k) {
+      case 1:
+        { //BAIXO ou Direita?
+          if (!((pvazio[0]+1)>(N-1))) {
             cp[pvazio[0]][pvazio[1]] = cp[pvazio[0]+1][pvazio[1]];
             cp[pvazio[0]+1][pvazio[1]] = 9;
-            Estado temp = new Estado(cp);
-            temp.g+=1;
-            temp.f=temp.g+temp.h;
+            temp = new Estado(cp);
+            temp.g = this.g + 1;
+            temp.h = temp.hEstado();
+            temp.f = temp.g + temp.h;
             temp.pai = this;
             filhos.add(temp);
           }
-          break;  
+          break;
         }
-        case 2:{
-          if(!((pvazio[0]-1)<0)){
+      case 2:
+        { //Para CIMA
+          if (!((pvazio[0]-1)<0)) {
             cp[pvazio[0]][pvazio[1]] = cp[pvazio[0]-1][pvazio[1]];
             cp[pvazio[0]-1][pvazio[1]] = 9;
-            Estado temp = new Estado(cp);
-            temp.g+=1;
-            temp.f=temp.g+temp.h;
+            temp = new Estado(cp);
+            temp.g = this.g + 1;
+            temp.h = temp.hEstado();
+            temp.f = temp.g + temp.h;
             temp.pai = this;
             filhos.add(temp);
           }
-          break;  
+          break;
         }
-        case 3:{
-          if(!((pvazio[1]+1)>(N-1))){
+      case 3:
+        { //BAIXO ou Direita?
+          if (!((pvazio[1]+1)>(N-1))) {
             cp[pvazio[0]][pvazio[1]] = cp[pvazio[0]][pvazio[1]+1];
             cp[pvazio[0]][pvazio[1]+1] = 9;
-            Estado temp = new Estado(cp);
-            temp.g+=1;
-            temp.f=temp.g+temp.h;
+            temp = new Estado(cp);
+            temp.g = this.g + 1;
+            temp.h = temp.hEstado();
+            temp.f = temp.g+temp.h;
             temp.pai = this;
             filhos.add(temp);
           }
-          break;  
+          break;
         }
-        case 4:{
-          if(!((pvazio[1]-1)<0)){
+      case 4:
+        { // Para ESQUERDA
+          if (!((pvazio[1]-1)<0)) {
             cp[pvazio[0]][pvazio[1]] = cp[pvazio[0]][pvazio[1]-1];
             cp[pvazio[0]][pvazio[1]-1] = 9;
-            Estado temp = new Estado(cp);
-            temp.g+=1;
-            temp.f=temp.g+temp.h;
+            temp = new Estado(cp);
+            temp.g = this.g + 1;
+            temp.h = temp.hEstado();
+            temp.f = temp.g+temp.h;
             temp.pai = this;
             filhos.add(temp);
           }
-          break;  
+          break;
         }
       }
     }
     return filhos;
   }
-  
 }
